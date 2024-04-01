@@ -82,3 +82,57 @@ ADD http://example.com/big.tar.xz /usr/src/things/
 In the second `ADD` example, the tar file will be downloaded and its contents extracted into the `/usr/src/things/` directory.
 
 In general, `COPY` is recommended for most cases when you're simply copying files. Use `ADD` when you need the extra features it provides.
+
+## Environment variables
+
+`ARG` and `ENV` are both Dockerfile instructions that allow you to set variables, but they are used in different contexts and have different scopes.
+
+`ARG` is used to define a variable that users can pass at build-time to the builder with the `docker build` command. The `ARG` variable is only available during the build of a Docker image and is not available in the running container.
+
+```
+ARG MY_VAR
+```
+
+You can pass the value for `MY_VAR` while building the Docker image:
+
+```
+docker build --build-arg MY_VAR=value .
+```
+
+`ENV` is used to set environment variables. These variables are available to the running container. Unlike `ARG`, `ENV` values are still available after the image is built.
+
+```
+ENV MY_VAR=value
+```
+
+In the running container, MY_VAR will have the value value.
+
+In summary, use `ARG` for build-time variables and `ENV` for variables needed in the running container.
+
+### ENV
+
+```
+FROM ubuntu:20.04
+ENV VERSION=2.0.1
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget https://github.com/ipinfo/cli/releases/download/ipinfo-${VERSION}/ipinfo_${VERSION}_linux_amd64.tar.gz && \
+    tar zxf ipinfo_${VERSION}_linux_amd64.tar.gz && \
+    mv ipinfo_${VERSION}_linux_amd64 /usr/bin/ipinfo && \
+    rm -rf ipinfo_${VERSION}_linux_amd64.tar.gz
+```
+
+### ARG
+
+```
+FROM ubuntu:20.04
+ARG VERSION=2.0.1
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget https://github.com/ipinfo/cli/releases/download/ipinfo-${VERSION}/ipinfo_${VERSION}_linux_amd64.tar.gz && \
+    tar zxf ipinfo_${VERSION}_linux_amd64.tar.gz && \
+    mv ipinfo_${VERSION}_linux_amd64 /usr/bin/ipinfo && \
+    rm -rf ipinfo_${VERSION}_linux_amd64.tar.gz
+```
+
+![docker_environment_build_args](images/docker_environment_build_args.png)
